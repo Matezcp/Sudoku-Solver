@@ -23,5 +23,9 @@ bool lista_vazia(LISTA *l);
 void lista_apagar(LISTA **l);
 //Verifica se existe um determinado vertice na lista
 bool lista_verificar_existencia(LISTA *lista,int vertice_buscado);
+//Retorna o tamanho da lista
+int lista_get_tam(LISTA *lista);
+//Retorna o numero do vertice que é o n ezimo termo da lista
+int lista_buscar_nVizinho(LISTA *lista,int n);
 
 #endif

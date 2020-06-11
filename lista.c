@@ -123,3 +123,20 @@ bool lista_vazia(LISTA *l){
 	}
 	return FALSE;
 }
+
+int lista_get_tam(LISTA *lista){
+	return lista->tam;
+}
+
+int lista_buscar_nVizinho(LISTA *lista,int n){
+    if(lista != NULL){      //verifica se a lista existe
+
+		NO *p = lista->ini;
+		for(int i=0;i<n;i++){
+			p = p->prox;
+		}
+
+		return p->vertice;
+    }
+    return FALSE;
+}
