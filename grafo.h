@@ -12,10 +12,14 @@ GRAFO *grafo_criar(int num_vertices);
 void grafo_inserir_aresta(GRAFO *grafo,int vertice1,int vertice2);
 //Retira uma aresta entre os vertices: vertice1 e vertice2 no grafo
 void grafo_remover_aresta(GRAFO *grafo,int vertice1,int vertice2);
+//insere uma aresta direcionada do vertice1 para o vertice2
+void grafo_inserir_aresta_direcionado(GRAFO *grafo,int vertice1,int vertice2);
 //Imprime o grafo
 void grafo_imprimir(GRAFO *grafo);
 //Colore o Grafo
-int *grafo_colorido(GRAFO *grafo);
+int grafo_colorido(GRAFO *grafo,int *cores,int vertice);
+//Cria tabuleiro sudoku
+void grafo_sudoku(GRAFO *grafo);
 //Apaga todo o grafo
 void grafo_apagar(GRAFO *grafo);
 
