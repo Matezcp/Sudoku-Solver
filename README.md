@@ -1,2 +1,6 @@
 # Sudoku-Solver
-I'm trying to make a sudoku solver using graphs  
+I made a sudoku solver using graphs  
+
+### Entrance
+
+To this example:
