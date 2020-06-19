@@ -3,25 +3,23 @@
 
 #include "lista.h"
 
-typedef struct _grafo GRAFO;
-typedef struct _num_arestas NUMARESTAS;
+typedef struct _grafo GRAPH;
 
 //Cria um grafo sem arestas, de num_vertices de vertices
-GRAFO *grafo_criar(int num_vertices);
-//Insere uma aresta entre os vertices: vertice1 e vertice2 no grafo
-void grafo_inserir_aresta(GRAFO *grafo,int vertice1,int vertice2);
-//Retira uma aresta entre os vertices: vertice1 e vertice2 no grafo
-void grafo_remover_aresta(GRAFO *grafo,int vertice1,int vertice2);
-//insere uma aresta direcionada do vertice1 para o vertice2
-void grafo_inserir_aresta_direcionado(GRAFO *grafo,int vertice1,int vertice2);
-//Imprime o grafo
-void grafo_imprimir(GRAFO *grafo);
-//Colore o Grafo
-int grafo_colorido(GRAFO *grafo,int *cores,int vertice);
+//Create a graph with num_vertex of vertexs and without edges
+GRAPH *graph_create(int num_vertex);
+//Insere uma aresta direcionada do vertice1 para o vertice2
+//Insert a directed edge from vertex1 to vertex2
+void graph_insert_directed_edge(GRAPH *graph,int vertex1,int vertex2);
 //Cria tabuleiro sudoku
-void grafo_sudoku(GRAFO *grafo);
+//Create a sudoku board
+void graph_sudoku(GRAPH *graph);
+//Colore o grafo para completar o sudoku, retorna true se obteve sucesso
+//Color the graph to fill the sudoku, returns true with sucess
+int graph_color(GRAPH *graph,int *colors,int vertex);
 //Apaga todo o grafo
-void grafo_apagar(GRAFO *grafo);
+//Delete the graph
+void graph_delete(GRAPH *graph);
 
 
 #endif

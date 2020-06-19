@@ -1,231 +1,238 @@
 #include "grafo.h"
 
-//A estrutura do grafo eh composta por um vetor de listas e um indicados do numero de vertices
+//A estrutura do graph eh composta por um vetor de listas e um indicados do numero de vertices
+//The graph's structure is composed of a vector of lists and a indicator of the vertex number
 struct _grafo{
-    LISTA** lista_de_adjacencia;
-    int num_vertices;
+    LIST** list_of_adjacency;
+    int num_vertex;
 };
 
-int whitchQuadrant(int linha,int coluna);
-void insertQuadrantNeighbor(int vertice,int *vizinhos);
-int verificaCor(GRAFO *grafo, int vertice,int *cores,int cor);
+//Funções axuliares:
+//Auxiliary functions:
+void insertQuadrantNeighbor(int vertex,int *neighbors);
+int verifyColor(GRAPH *graph, int vertex,int *colors,int color);
 
+//Cria um grafo sem arestas, de num_vertex de vertices e retorna o grafo
+//Create a graph with num_vertex of vertexs and without edges and returns it
+GRAPH *graph_create(int num_vertex){
+    GRAPH *graph;
+    //Verifica se a alocação foi bem sucedida
+    //Verify if the allocation was successful
+    if((graph = (GRAPH *) malloc(sizeof(GRAPH)))==NULL) return NULL;
 
-GRAFO *grafo_criar(int num_vertices){
-    GRAFO *grafo;
-    if((grafo = (GRAFO *) malloc(sizeof(GRAFO)))==NULL) return NULL; //Verifica se a alocação foi bem sucedida
+    graph->num_vertex = num_vertex;
+    //Verifica se a alocação foi bem sucedida
+    //Verify if the allocation was successful
+    if((graph->list_of_adjacency = (LIST**) malloc(sizeof(LIST*)*num_vertex))==NULL) return NULL;
 
-    grafo->num_vertices = num_vertices;
-    if((grafo->lista_de_adjacencia = (LISTA**) malloc(sizeof(LISTA*)*num_vertices))==NULL) return NULL; //Verifica se a alocação foi bem sucedida
-
-    for(int i=0;i<num_vertices;i++){
-        grafo->lista_de_adjacencia[i] = lista_criar(); //Cria uma lista para cada vertice
+    for(int i=0;i<num_vertex;i++){
+        //Cria uma lista para cada vertice
+        //Create a list for each vertex
+        graph->list_of_adjacency[i] = list_create();
     }
 
-    return grafo;
+    return graph;
 }
 
-//insere uma aresta direcionada do vertice1 para o vertice2
-void grafo_inserir_aresta_direcionado(GRAFO *grafo,int vertice1,int vertice2){
-    if(lista_verificar_existencia(grafo->lista_de_adjacencia[vertice1],vertice2)==FALSE){ //Verifica se a aresta já existe
-        //Insere a aresta, colocando-a na lista dos vertices desejados
-        lista_inserir(grafo->lista_de_adjacencia[vertice1],vertice2); 
+//Insere uma aresta direcionada do vertice1 para o vertice2
+//Insert a directed edge from vertex1 to vertex2
+void graph_insert_directed_edge(GRAPH *graph,int vertex1,int vertex2){
+    if(!list_verify_existence(graph->list_of_adjacency[vertex1],vertex2)){ //Verifica se a aresta já existe / Verify if the edge already exist
+        list_insert(graph->list_of_adjacency[vertex1],vertex2); 
     }
 }
 
-
-void grafo_sudoku(GRAFO *grafo){
-    int matriz[9][9];
+//Cria o tabuleiro sudoku conectando as arestas que precisam ser conectadas
+//Create a sudoku board connecting the edges that needs to be connected
+void graph_sudoku(GRAPH *graph){
+    int matrix[9][9];
     int value = 0;
-    int linha,coluna;
-    int vizinhos[20];
+    int line,column;
+    int neighbors[20];
     int i,j,k;
 
     for(int i=0;i<9;i++){
         for(int j=0;j<9;j++,value++){
-            matriz[i][j] = value;
+            matrix[i][j] = value;
         }
     }
 
-    for(i=0,k=0;i<grafo->num_vertices;i++,k=0){
-        linha = i / 9;
-        coluna = i % 9;
+    for(i=0,k=0;i<graph->num_vertex;i++,k=0){
+        line = i / 9;
+        column = i % 9;
 
         //Anda toda coluna para baixo
-        for(j=coluna+1;j<9;j++,k++)
-            vizinhos[k] = matriz[linha][j];
+        //Pass all the columns under the vertex
+        for(j=column+1;j<9;j++,k++)
+            neighbors[k] = matrix[line][j];
         //Anda toda coluna para cima
-        for(j=coluna-1;j>=0;j--,k++)
-            vizinhos[k] = matriz[linha][j];
+        //Pass all the columns above the vertex
+        for(j=column-1;j>=0;j--,k++)
+            neighbors[k] = matrix[line][j];
         //Anda toda linha para direita
-        for(j=linha+1;j<9;j++,k++)
-            vizinhos[k] = matriz[j][coluna];
+        //Pass all the line going to the right of the vertex
+        for(j=line+1;j<9;j++,k++)
+            neighbors[k] = matrix[j][column];
         //Anda toda linha para esquerda
-        for(j=linha-1;j>=0;j--,k++)
-            vizinhos[k] = matriz[j][coluna];
+        //Pass all the line going to the left of the vertex
+        for(j=line-1;j>=0;j--,k++)
+            neighbors[k] = matrix[j][column];
 
-        //Insere
-        insertQuadrantNeighbor(i,vizinhos);
+        //Insere os vizinhos do quadrado do sudoku que faltaram
+        //Insert he nheibors of the sudoku's square that are missing
+        insertQuadrantNeighbor(i,neighbors);
 
         //Insere as arestas
+        //Insert the edges
         for(j=0;j<20;j++){
-            grafo_inserir_aresta_direcionado(grafo,i,vizinhos[j]);
+            graph_insert_directed_edge(graph,i,neighbors[j]);
         }
 
-
     }
     
-
 }
 
-//Colore o Grafo
-int grafo_colorido(GRAFO *grafo,int *cores,int vertice){
+//Colore o grafo para completar o sudoku, retorna true se obteve sucesso
+//Color the graph to fill the sudoku, returns true with sucess
+int graph_color(GRAPH *graph,int *colors,int vertex){
     //Se chegou no ultimo vertice retorna true
-    if(vertice == 81)
-        return 1;
+    //If reach the last vertex returns true
+    if(vertex == 81)
+        return TRUE;
     
     //Se já estiver colorido
-    if(cores[vertice]){
+    //If already with color
+    if(colors[vertex]){
         //Chama para o próximo vertice, se retornar true retorna true
-        if(grafo_colorido(grafo,cores,vertice+1))
-            return 1;
+        //Calls the function to the next vertex if returns true return true
+        if(graph_color(graph,colors,vertex+1))
+            return TRUE;
         //Se retornar false retorna false
+        //If returns false return false
         else
-            return 0;
+            return FALSE;
     }
 
-    //Se não tiver colorido ve cor a cor
+    //Se não tiver colorido analise cor a cor
+    //If not colored yet analyse color to color
     for(int i=1;i<=9;i++){
-        //Se a cor pode ser colocada naquela posição
-        if(verificaCor(grafo,vertice,cores,i)){
+        //Verifica se a cor pode ser colocada naquela posição
+        //Verify if the color can be put in that vertexs
+        if(verifyColor(graph,vertex,colors,i)){
             //Coloca a cor naquela posição
-            cores[vertice] = i;
+            //Put the color in that vertex
+            colors[vertex] = i;
             //Chama a função para o proximo vertice se retornar true, retorna true
-            if(grafo_colorido(grafo,cores,vertice+1))
-                return 1;
+            //Calls the function to the next vertex if returns true return true
+            if(graph_color(graph,colors,vertex+1))
+                return TRUE;
             //Se não retornar true marca o vertice como não colorido e tenta outra cor
-            cores[vertice] = 0;
+            //If not returns true assign the vertex as not colored and try another color
+            colors[vertex] = 0;
         }
     }
 
     //Se no final não conseguir retorna false
-    return 0;
+    //If reach here returns false
+    return FALSE;
 }
 
-void grafo_apagar(GRAFO *grafo){
+//Apaga todo o grafo
+//Delete the graph
+void graph_delete(GRAPH *graph){
     //Apaga a lista de cada vertice
-    for(int i=0;i<grafo->num_vertices;i++){
-        lista_apagar(&grafo->lista_de_adjacencia[i]);
+    //Delete the list of each vertex
+    for(int i=0;i<graph->num_vertex;i++){
+        list_delete(&graph->list_of_adjacency[i]);
     }
-    //Por fim apaga o ponteiro duplo das listas e o grafo
-    free(grafo->lista_de_adjacencia);
-    free(grafo);
+    //Por fim apaga o ponteiro duplo das listas e o graph
+    //Lastly delete the double pointer of the lists and the graph
+    free(graph->list_of_adjacency);
+    free(graph);
 }
 
-int whitchQuadrant(int linha,int coluna){
-    int mult;
-    if(linha <= 2){
-        mult = 0;
-    }
-    else if(linha <= 5){
-        mult = 3;
-    }
-    else{
-        mult = 6;
-    }
+//Ve os vizinhos do quadrado do sudoku do vertice em questão
+//See the neighbors of the sudoku square of the vertex
+void insertQuadrantNeighbor(int vertex,int *neighbors){
+    int line,column;
+    int modline,modcolumn;
 
-    if(coluna <= 2){
-        return mult;
-    }
-    else if(coluna <= 5){
-        return mult + 1;
-    }
-    else{
-        return mult + 2;
-    }
+    line = vertex/9;
+    column = vertex % 9;
 
-}
+    modline = line % 3;
+    modcolumn = column % 3;
 
-void insertQuadrantNeighbor(int vertice,int *vizinhos){
-    int linha,coluna;
-    int modLinha,modColuna;
-
-    linha = vertice/9;
-    coluna = vertice % 9;
-
-    int quadrant = whitchQuadrant(linha,coluna);
-
-    modLinha = linha % 3;
-    modColuna = coluna % 3;
-
-    if(modLinha == 0){
-        if(modColuna == 0){
-            vizinhos[16] = vertice + 10;
-            vizinhos[17] = vertice + 11;
-            vizinhos[18] = vertice + 19;
-            vizinhos[19] = vertice + 20;
+    if(modline == 0){
+        if(modcolumn == 0){
+            neighbors[16] = vertex + 10;
+            neighbors[17] = vertex + 11;
+            neighbors[18] = vertex + 19;
+            neighbors[19] = vertex + 20;
         }
-        else if(modColuna == 1){
-            vizinhos[16] = vertice + 8;
-            vizinhos[17] = vertice + 10;
-            vizinhos[18] = vertice + 17;
-            vizinhos[19] = vertice + 19;
+        else if(modcolumn == 1){
+            neighbors[16] = vertex + 8;
+            neighbors[17] = vertex + 10;
+            neighbors[18] = vertex + 17;
+            neighbors[19] = vertex + 19;
         }
         else{
-            vizinhos[16] = vertice + 7;
-            vizinhos[17] = vertice + 8;
-            vizinhos[18] = vertice + 16;
-            vizinhos[19] = vertice + 17;
+            neighbors[16] = vertex + 7;
+            neighbors[17] = vertex + 8;
+            neighbors[18] = vertex + 16;
+            neighbors[19] = vertex + 17;
         }
     }
-    else if(modLinha == 1){
-        if(modColuna == 0){
-            vizinhos[16] = vertice - 8;
-            vizinhos[17] = vertice - 7;
-            vizinhos[18] = vertice + 10;
-            vizinhos[19] = vertice + 11;
+    else if(modline == 1){
+        if(modcolumn == 0){
+            neighbors[16] = vertex - 8;
+            neighbors[17] = vertex - 7;
+            neighbors[18] = vertex + 10;
+            neighbors[19] = vertex + 11;
         }
-        else if(modColuna == 1){
-            vizinhos[16] = vertice - 10;
-            vizinhos[17] = vertice - 8;
-            vizinhos[18] = vertice + 8;
-            vizinhos[19] = vertice + 10;
+        else if(modcolumn == 1){
+            neighbors[16] = vertex - 10;
+            neighbors[17] = vertex - 8;
+            neighbors[18] = vertex + 8;
+            neighbors[19] = vertex + 10;
         }
         else{
-            vizinhos[16] = vertice - 11;
-            vizinhos[17] = vertice - 10;
-            vizinhos[18] = vertice + 7;
-            vizinhos[19] = vertice + 8;
+            neighbors[16] = vertex - 11;
+            neighbors[17] = vertex - 10;
+            neighbors[18] = vertex + 7;
+            neighbors[19] = vertex + 8;
         }
     }
     else{
-        if(modColuna == 0){
-            vizinhos[16] = vertice - 17;
-            vizinhos[17] = vertice - 16;
-            vizinhos[18] = vertice - 8;
-            vizinhos[19] = vertice - 7;
+        if(modcolumn == 0){
+            neighbors[16] = vertex - 17;
+            neighbors[17] = vertex - 16;
+            neighbors[18] = vertex - 8;
+            neighbors[19] = vertex - 7;
         }
-        else if(modColuna == 1){
-            vizinhos[16] = vertice - 19;
-            vizinhos[17] = vertice - 17;
-            vizinhos[18] = vertice - 10;
-            vizinhos[19] = vertice - 8;
+        else if(modcolumn == 1){
+            neighbors[16] = vertex - 19;
+            neighbors[17] = vertex - 17;
+            neighbors[18] = vertex - 10;
+            neighbors[19] = vertex - 8;
         }
         else{
-            vizinhos[16] = vertice - 20;
-            vizinhos[17] = vertice - 19;
-            vizinhos[18] = vertice - 11;
-            vizinhos[19] = vertice - 10;
+            neighbors[16] = vertex - 20;
+            neighbors[17] = vertex - 19;
+            neighbors[18] = vertex - 11;
+            neighbors[19] = vertex - 10;
         }
     }
 
 }
 
-int verificaCor(GRAFO *grafo, int vertice,int *cores,int cor){
-    int vizinho;
-    for(int i=0;i<lista_get_tam(grafo->lista_de_adjacencia[vertice]);i++){
-        vizinho = lista_buscar_nVizinho(grafo->lista_de_adjacencia[vertice],i);
-        if(cores[vizinho] == cor)
+//Verifica se a cor pode ser colocada no vertice em questão
+//Verify if the color can be put in the vertex
+int verifyColor(GRAPH *graph, int vertex,int *colors,int color){
+    int neighbor;
+    for(int i=0;i<list_get_size(graph->list_of_adjacency[vertex]);i++){
+        neighbor = list_search_nNeighbor(graph->list_of_adjacency[vertex],i);
+        if(colors[neighbor] == color)
             return 0;
     }
 
